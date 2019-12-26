@@ -1,0 +1,8 @@
+index:
+    path: /
+    methods: GET
+    controller: SmartAPI\Controller\BaseController::index
+ddns:
+    path: /ddns
+    methods: PUT
+    controller: SmartAPI\Controller\DynamicDNS::update

@@ -1,2 +1,2 @@
-# ifttt
-IFTTT-API
+# SmartAPI
+Breier Services for SmartAPI
