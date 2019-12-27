@@ -6,15 +6,15 @@
  * Base Controller File
  *
  * @category Controller
- * @package  Breier\Controller
+ * @package  SmartAPI\Controller
  * @author   Andre Breier <breier.de@gmail.com>
  * @license  GPLv3 /LICENSE
  */
 
 namespace SmartAPI\Controller;
 
-use Symfony\Component\HttpFoundation\Response;
 use Breier\ExtendedArray\ExtendedArray;
+use Symfony\Component\HttpFoundation\{Request, Response};
 use SmartAPI\Exception\ResponseException;
 
 /**
@@ -22,6 +22,8 @@ use SmartAPI\Exception\ResponseException;
  */
 class BaseController
 {
+    private $requestData;
+
     public function __construct()
     {
         if (false) {
@@ -34,6 +36,21 @@ class BaseController
         return $this->createResponse("Breier Services for SmartAPI");
     }
 
+    /**
+     * Get Request Data
+     */
+    public function getRequestData(Request $request): ExtendedArray
+    {
+        if (null !== $this->requestData) {
+            return $this->requestData;
+        }
+
+        $content = (string) $request->getContent();
+        if (!empty($content)) {
+            $this->requestData = ExtendedArray::fromJSON($content);
+            return $this->requestData;
+        }
+    }
     /**
      * Create a Symfony HTTP Response Object
      *

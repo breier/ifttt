@@ -3,7 +3,7 @@
 /**
  * PHP Version 7
  *
- * Response Exception
+ * Host Exception
  *
  * @category Exception
  * @package  SmartAPI\Exception
@@ -16,9 +16,9 @@ namespace SmartAPI\Exception;
 use Exception;
 
 /**
- * Response Exception class
+ * Host Exception class
  */
-class ResponseException extends Exception
+class HostException extends Exception
 {
     // nothing to modify
 }
