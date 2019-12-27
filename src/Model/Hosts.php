@@ -60,10 +60,10 @@ class Hosts
     /**
      * Checks for matching mac-addresses insensitively
      */
-    public function find(string $search): string
+    public function find(string $search): ExtendedArray
     {
-        if ($this->list->contains($search, true)) {
-            return $search;
+        if ($this->list->keys()->contains($search, true)) {
+            return $this->getFullHostInfo($search);
         }
 
         foreach (['$1-', '$1:', '$1'] as $replacement) {
@@ -73,12 +73,32 @@ class Hosts
                 $search
             );
 
-            if ($this->list->contains($macAddress, true)) {
-                return $macAddress;
+            if ($this->list->keys()->contains($macAddress, true)) {
+                return $this->getFullHostInfo($macAddress);
             }
         }
 
-        return '';
+        return new ExtendedArray();
+    }
+
+    /**
+     * Get Full Host Info
+     *
+     * @throws HostException
+     */
+    public function getFullHostInfo(string $macAddress): ExtendedArray
+    {
+        if (!$this->list->keys()->contains($macAddress, true)) {
+            throw new HostException("Host not found!");
+        }
+
+        $hostInfo = $this->list->offsetGet($macAddress);
+        $hostInfo->macAddress = $macAddress;
+
+        $hostItem = $this->cache->getItem($macAddress);
+        $hostInfo->ipAddress = $hostItem->get();
+
+        return $hostInfo;
     }
 
     /**

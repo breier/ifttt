@@ -4,5 +4,9 @@ index:
     controller: SmartAPI\Controller\BaseController::index
 ddns:
     path: /ddns
-    methods: PUT
+    methods: POST
     controller: SmartAPI\Controller\DynamicDNS::update
+wol:
+    path: /wol
+    methods: POST
+    controller: SmartAPI\Controller\Actions::wakeOnLan

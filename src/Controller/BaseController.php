@@ -14,6 +14,7 @@
 namespace SmartAPI\Controller;
 
 use Breier\ExtendedArray\ExtendedArray;
+use SmartAPI\Exception\RequestException;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use SmartAPI\Exception\ResponseException;
 
@@ -46,10 +47,12 @@ class BaseController
         }
 
         $content = (string) $request->getContent();
-        if (!empty($content)) {
-            $this->requestData = ExtendedArray::fromJSON($content);
-            return $this->requestData;
+        if (empty($content)) {
+            throw new RequestException("Invalid Request!");
         }
+
+        $this->requestData = ExtendedArray::fromJSON($content);
+        return $this->requestData;
     }
     /**
      * Create a Symfony HTTP Response Object

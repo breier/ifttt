@@ -16,24 +16,14 @@ namespace SmartAPI\Controller;
 use Breier\ExtendedArray\ExtendedArray;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use SmartAPI\Exception\{HostException, RequestException};
-use SmartAPI\Model\Hosts;
 
 /**
  * Dynamic DNS Controller class
  */
-class DynamicDNS extends BaseController
+class DynamicDNS extends HostController
 {
-    private const REQUEST_OBJECT_KEY_MAC_ADDRESS = 'macAddress';
-
-    private $hosts;
-
-    public function __construct()
-    {
-        $this->hosts = new Hosts();
-    }
-
     /**
-     * @route PUT /ddns
+     * @route POST /ddns
      */
     public function update(Request $request): Response
     {
@@ -43,49 +33,25 @@ class DynamicDNS extends BaseController
             return $this->createResponse($e->getMessage(), 400);
         }
 
-        $response = new ExtendedArray();
-
-        $response->macAddress = $this->hosts->find(
+        $hostInfo = $this->getHosts()->find(
             $this->getRequestData($request)->offsetGet(
                 self::REQUEST_OBJECT_KEY_MAC_ADDRESS
             )
         );
 
-        $response->ipAddress = $request->getClientIp();
+        $hostInfo->ipAddress = $request->getClientIp();
 
         try {
-            $this->hosts->update($response);
+            $this->getHosts()->update($hostInfo);
         } catch (HostException $e) {
             return $this->createResponse($e->getMessage(), 422);
         }
 
-        return $this->createResponse($response);
-    }
-
-    /**
-     * Validate MAC Address from request
-     *
-     * @throws RequestException
-     */
-    private function validateMacAddress(ExtendedArray $requestData): void
-    {
-        if (!$requestData->offsetExists(self::REQUEST_OBJECT_KEY_MAC_ADDRESS)) {
-            throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' object key is missing!'
-            );
-        }
-
-        $macAddress = $requestData->offsetGet(self::REQUEST_OBJECT_KEY_MAC_ADDRESS);
-        if (preg_match('/^([0-9a-fA-F]{2}[\:\-]?){5}[0-9a-fA-F]{2}$/', $macAddress) !== 1) {
-            throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' has invalid format!'
-            );
-        }
-
-        if (empty($this->hosts->find($macAddress))) {
-            throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' not found!'
-            );
-        }
+        return $this->createResponse(
+            [
+                "macAddress" => $hostInfo->macAddress,
+                "ipAddress" => $hostInfo->ipAddress,
+            ]
+        );
     }
 }
