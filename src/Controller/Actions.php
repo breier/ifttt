@@ -56,7 +56,11 @@ class Actions extends BaseController
         $actionName = basename($request->getPathInfo());
 
         if ($this->IFTTTisTestMode($request)) {
-            return $this->createResponse(['data' => [['id' => 123]]]);
+            return new Response(
+                '{"data":[{"id":123}]}',
+                200,
+                ['Content-Type' => 'application/json']
+            );
         }
 
         try {
