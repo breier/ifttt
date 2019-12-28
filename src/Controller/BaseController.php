@@ -31,6 +31,9 @@ class BaseController
         }
     }
 
+    /**
+     * @route GET /
+     */
     public function index(): Response
     {
         return $this->createResponse("Breier Services for SmartAPI");
@@ -53,6 +56,7 @@ class BaseController
         $this->requestData = ExtendedArray::fromJSON($content);
         return $this->requestData;
     }
+
     /**
      * Create a Symfony HTTP Response Object
      *

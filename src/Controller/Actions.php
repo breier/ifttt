@@ -46,7 +46,7 @@ class Actions extends BaseController
         try {
             $this->IFTTTvalidateRequest($request);
         } catch (RequestException $e) {
-            return $this->createResponse($e->getMessage(), 401);
+            return $this->IFTTTresponse($e->getMessage(), 401);
         }
 
         $hostInfo = $this->hosts->getFullHostInfo(
@@ -56,11 +56,7 @@ class Actions extends BaseController
         $actionName = basename($request->getPathInfo());
 
         if ($this->IFTTTisTestMode($request)) {
-            return new Response(
-                '{"data":[{"id":123}]}',
-                200,
-                ['Content-Type' => 'application/json']
-            );
+            return $this->IFTTTresponse('1q0o2w9i3e8u4r7y5t');
         }
 
         try {

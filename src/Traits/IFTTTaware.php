@@ -15,7 +15,7 @@ namespace SmartAPI\Traits;
 
 use Breier\ExtendedArray\ExtendedArray;
 use SmartAPI\Exception\RequestException;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\{Request, Response};
 
 /**
  * IFTTT Trait class
@@ -91,5 +91,25 @@ trait IFTTTaware
     public function IFTTTisTestMode(Request $request): bool
     {
         return !! $this->IFTTTgetHeaders($request)->offsetGet('ifttt-test-mode') ?? false;
+    }
+
+    /**
+     * Create a Symfony HTTP Response Object
+     *
+     * @param mixed $mixedContent To add to the response
+     *
+     * @throws ResponseException
+     */
+    protected function IFTTTresponse($mixedContent, int $httpCode = 200): Response
+    {
+        $response = ($httpCode === 200)
+            ? ['data' => [['id' => $mixedContent]]]
+            : ['errors' => [$mixedContent]];
+
+        return new Response(
+            \json_encode($response),
+            $httpCode,
+            ['Content-Type' => 'application/json']
+        );
     }
 }

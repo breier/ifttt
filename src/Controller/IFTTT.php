@@ -32,7 +32,7 @@ class IFTTT extends BaseController
         try {
             $this->IFTTTvalidateRequest($request);
         } catch (RequestException $e) {
-            return $this->createResponse($e->getMessage(), 401);
+            return $this->IFTTTresponse($e->getMessage(), 401);
         }
 
         $scaffold['data']['samples']['actions'] = [
@@ -50,7 +50,7 @@ class IFTTT extends BaseController
         try {
             $this->IFTTTvalidateRequest($request);
         } catch (RequestException $e) {
-            return $this->createResponse($e->getMessage(), 401);
+            return $this->IFTTTresponse($e->getMessage(), 401);
         }
 
         return $this->createResponse('OK');
