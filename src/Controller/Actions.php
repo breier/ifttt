@@ -56,7 +56,7 @@ class Actions extends BaseController
         $actionName = basename($request->getPathInfo());
 
         if ($this->IFTTTisTestMode($request)) {
-            return $this->createResponse("/system script run {$actionName}");
+            return $this->createResponse(['data' => [['id' => 123]]]);
         }
 
         try {
