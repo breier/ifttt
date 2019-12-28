@@ -102,9 +102,9 @@ trait IFTTTaware
      */
     protected function IFTTTresponse($mixedContent, int $httpCode = 200): Response
     {
-        $response = ($httpCode === 200)
+        $response = ($httpCode < 300)
             ? ['data' => [['id' => $mixedContent]]]
-            : ['errors' => [$mixedContent]];
+            : ['errors' => [['message' => $mixedContent]]];
 
         return new Response(
             \json_encode($response),
