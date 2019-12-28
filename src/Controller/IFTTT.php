@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
 class IFTTT extends BaseController
 {
     /**
-     * @route GET /ifttt/v1/test/setup
+     * @route POST /ifttt/v1/test/setup
      */
     public function setup(): Response
     {
@@ -30,5 +30,13 @@ class IFTTT extends BaseController
         ];
 
         return $this->createResponse($scaffold);
+    }
+
+    /**
+     * @route GET /ifttt/v1/status
+     */
+    public function status(): Response
+    {
+        return $this->createResponse('OK');
     }
 }

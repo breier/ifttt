@@ -6,9 +6,13 @@ ddns:
     path: /ddns
     methods: POST
     controller: SmartAPI\Controller\DynamicDNS::update
+ifttt-status:
+    path: /ifttt/v1/status
+    methods: GET
+    controller: SmartAPI\Controller\IFTTT::status
 ifttt-setup:
     path: /ifttt/v1/test/setup
-    methods: GET
+    methods: POST
     controller: SmartAPI\Controller\IFTTT::setup
 ifttt-wol_pcd:
     path: /ifttt/v1/actions/wol_pcd
