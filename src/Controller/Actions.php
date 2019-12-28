@@ -16,6 +16,8 @@ namespace SmartAPI\Controller;
 use phpseclib\Net\SSH2;
 use Breier\ExtendedArray\ExtendedArray;
 use Symfony\Component\HttpFoundation\{Request, Response};
+use SmartAPI\Exception\RequestException;
+use SmartAPI\Traits\IFTTTaware;
 use SmartAPI\Model\Hosts;
 use ErrorException;
 
@@ -24,6 +26,8 @@ use ErrorException;
  */
 class Actions extends BaseController
 {
+    use IFTTTaware;
+
     private $hosts;
 
     /**
@@ -39,11 +43,21 @@ class Actions extends BaseController
      */
     public function wakeOnLan(Request $request): Response
     {
+        try {
+            $this->IFTTTvalidateRequest($request);
+        } catch (RequestException $e) {
+            return $this->createResponse($e->getMessage(), 401);
+        }
+
         $hostInfo = $this->hosts->getFullHostInfo(
             $this->hosts->getAll()->first()->key()
         );
 
         $actionName = basename($request->getPathInfo());
+
+        if ($this->IFTTTisTestMode($request)) {
+            return $this->createResponse("/system script run {$actionName}");
+        }
 
         try {
             $response = $this->sshExec(

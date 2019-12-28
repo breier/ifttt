@@ -13,18 +13,28 @@
 
 namespace SmartAPI\Controller;
 
-use Symfony\Component\HttpFoundation\Response;
+use SmartAPI\Exception\RequestException;
+use Symfony\Component\HttpFoundation\{Request, Response};
+use SmartAPI\Traits\IFTTTaware;
 
 /**
  * IFTTT Controller class
  */
 class IFTTT extends BaseController
 {
+    use IFTTTaware;
+
     /**
      * @route POST /ifttt/v1/test/setup
      */
-    public function setup(): Response
+    public function setup(Request $request): Response
     {
+        try {
+            $this->IFTTTvalidateRequest($request);
+        } catch (RequestException $e) {
+            return $this->createResponse($e->getMessage(), 401);
+        }
+
         $scaffold['data']['samples']['actions'] = [
             "wol_pcd" => [],
         ];
@@ -35,8 +45,14 @@ class IFTTT extends BaseController
     /**
      * @route GET /ifttt/v1/status
      */
-    public function status(): Response
+    public function status(Request $request): Response
     {
+        try {
+            $this->IFTTTvalidateRequest($request);
+        } catch (RequestException $e) {
+            return $this->createResponse($e->getMessage(), 401);
+        }
+
         return $this->createResponse('OK');
     }
 }
