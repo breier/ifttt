@@ -14,9 +14,8 @@
 namespace SmartAPI\Controller;
 
 use Breier\ExtendedArray\ExtendedArray;
-use SmartAPI\Exception\RequestException;
+use SmartAPI\Exception\{RequestException, ResponseException};
 use Symfony\Component\HttpFoundation\{Request, Response};
-use SmartAPI\Exception\ResponseException;
 
 /**
  * Base Controller class

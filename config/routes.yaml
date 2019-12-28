@@ -6,7 +6,11 @@ ddns:
     path: /ddns
     methods: POST
     controller: SmartAPI\Controller\DynamicDNS::update
-wol:
-    path: /wol
+ifttt-setup:
+    path: /ifttt/v1/test/setup
+    methods: GET
+    controller: SmartAPI\Controller\IFTTT::setup
+ifttt-wol_pcd:
+    path: /ifttt/v1/actions/wol_pcd
     methods: POST
     controller: SmartAPI\Controller\Actions::wakeOnLan

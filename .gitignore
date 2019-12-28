@@ -1,4 +1,3 @@
-/config/ddns-hosts.json
 
 ###> symfony/framework-bundle ###
 /.env.local

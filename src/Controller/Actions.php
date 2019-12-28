@@ -16,33 +16,40 @@ namespace SmartAPI\Controller;
 use phpseclib\Net\SSH2;
 use Breier\ExtendedArray\ExtendedArray;
 use Symfony\Component\HttpFoundation\{Request, Response};
-use SmartAPI\Exception\RequestException;
+use SmartAPI\Model\Hosts;
 use ErrorException;
 
 /**
  * Actions Controller class
  */
-class Actions extends HostController
+class Actions extends BaseController
 {
+    private $hosts;
+
     /**
-     * @route POST /wol
+     * Instantiate Hosts
+     */
+    public function __construct()
+    {
+        $this->hosts = new Hosts();
+    }
+
+    /**
+     * @route POST /ifttt/v1/actions/wol_pcd
      */
     public function wakeOnLan(Request $request): Response
     {
-        try {
-            $this->validateMacAddress($this->getRequestData($request));
-        } catch (RequestException $e) {
-            return $this->createResponse($e->getMessage(), 400);
-        }
-
-        $hostInfo = $this->getHosts()->find(
-            $this->getRequestData($request)->offsetGet(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS
-            )
+        $hostInfo = $this->hosts->getFullHostInfo(
+            $this->hosts->getAll()->first()->key()
         );
 
+        $actionName = basename($request->getPathInfo());
+
         try {
-            $response = $this->sshExec($hostInfo, '/system script run wol-pcd');
+            $response = $this->sshExec(
+                $hostInfo,
+                "/system script run {$actionName}"
+            );
         } catch (\Exception $e) {
             return $this->createResponse($e->getMessage(), 422);
         }
@@ -56,7 +63,7 @@ class Actions extends HostController
      * @return mixed Command output
      * @throws ErrorException
      */
-    public function sshExec(ExtendedArray $hostInfo, string $command)
+    private function sshExec(ExtendedArray $hostInfo, string $command)
     {
         $sshConnection = new SSH2($hostInfo->ipAddress);
         if ($sshConnection->login($hostInfo->user, $hostInfo->password)) {
