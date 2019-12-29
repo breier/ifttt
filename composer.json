@@ -2,7 +2,7 @@
     "name": "breier/smart-api",
     "description": "Breier Services for SmartAPI",
     "license": "GPL-3.0-or-later",
-    "version": "0.4",
+    "version": "0.8",
     "type": "package",
     "authors": [
         {
@@ -16,7 +16,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "breier/libs": "^1.2",
-        "phpseclib/phpseclib": "~2.0",
+        "phpseclib/phpseclib": "^2.0",
         "symfony/framework-bundle": "5.0.*",
         "symfony/console": "5.0.*",
         "symfony/dotenv": "5.0.*",

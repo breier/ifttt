@@ -22,6 +22,11 @@ use Symfony\Component\HttpFoundation\{Request, Response};
  */
 trait IFTTTaware
 {
+    private static $IFTTT_SERVICE_KEY_HEADER = 'ifttt-service-key';
+    private static $IFTTT_CHANNEL_KEY_HEADER = 'ifttt-channel-key';
+    private static $IFTTT_TEST_MODE_HEADER = 'ifttt-test-mode';
+
+
     private $headers;
     private $serviceKey;
 
@@ -35,7 +40,7 @@ trait IFTTTaware
         }
 
         $IFTTTcallback = function ($key) {
-            return preg_match('/^ifttt-.*/', $key) === 1;
+            return preg_match('/^(IFTTT|ifttt)-.*/', $key) === 1;
         };
 
         $flattenHeaders = function ($item) {
@@ -72,10 +77,14 @@ trait IFTTTaware
     {
         $requestHeaders = $this->IFTTTgetHeaders($request);
 
-        if ($requestHeaders->offsetExists('ifttt-service-key')) {
-            $requestServiceKey = $requestHeaders->offsetGet('ifttt-service-key');
-        } elseif ($requestHeaders->offsetExists('ifttt-channel-key')) {
-            $requestServiceKey = $requestHeaders->offsetGet('ifttt-channel-key');
+        if ($requestHeaders->offsetExists(self::$IFTTT_SERVICE_KEY_HEADER)) {
+            $requestServiceKey = $requestHeaders->offsetGet(
+                self::$IFTTT_SERVICE_KEY_HEADER
+            );
+        } elseif ($requestHeaders->offsetExists(self::$IFTTT_CHANNEL_KEY_HEADER)) {
+            $requestServiceKey = $requestHeaders->offsetGet(
+                self::$IFTTT_CHANNEL_KEY_HEADER
+            );
         } else {
             $requestServiceKey = 'INVALID';
         }
@@ -90,7 +99,15 @@ trait IFTTTaware
      */
     public function IFTTTisTestMode(Request $request): bool
     {
-        return !! $this->IFTTTgetHeaders($request)->offsetGet('ifttt-test-mode') ?? false;
+        $requestHeaders = $this->IFTTTgetHeaders($request);
+
+        if ($requestHeaders->offsetExists(self::$IFTTT_TEST_MODE_HEADER)) {
+            return !! $this->IFTTTgetHeaders($request)->offsetGet(
+                self::$IFTTT_TEST_MODE_HEADER
+            );
+        }
+
+        return false;
     }
 
     /**
@@ -107,7 +124,7 @@ trait IFTTTaware
             : ['errors' => [['message' => $mixedContent]]];
 
         return new Response(
-            \json_encode($response),
+            json_encode($response),
             $httpCode,
             ['Content-Type' => 'application/json']
         );

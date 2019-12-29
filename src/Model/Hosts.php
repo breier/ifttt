@@ -22,6 +22,8 @@ use SmartAPI\Exception\HostException;
  */
 class Hosts
 {
+    public const REQUEST_OBJECT_KEY_MAC_ADDRESS = 'macAddress';
+
     private const LOCAL_CACHE_NAMESPACE = 'SmartAPI_DynamicDNS_Hosts';
     private const LOCAL_CACHE_TIME_TO_LIVE = 2592000; // 20 days
 
@@ -29,13 +31,18 @@ class Hosts
     private $cache;
 
     /**
-     * @throws HostException
+     * Instantiate hosts list and local cache
      */
     public function __construct()
     {
-        $this->list = ExtendedArray::fromJSON(
+        $rawList = ExtendedArray::fromJSON(
             $_ENV['DDNS_HOSTS'] ?? '{}'
         );
+
+        $this->list = new ExtendedArray();
+        foreach ($rawList as $key => $info) {
+            $this->list->offsetSet($key, new HostInfo($info));
+        }
 
         $this->cache = new FilesystemAdapter(
             self::LOCAL_CACHE_NAMESPACE,
@@ -90,7 +97,9 @@ class Hosts
         $hostInfo->macAddress = $macAddress;
 
         $hostItem = $this->cache->getItem($macAddress);
-        $hostInfo->ipAddress = $hostItem->get();
+        if (!empty($hostItem->get())) {
+            $hostInfo->ipAddress = $hostItem->get();
+        }
 
         return $hostInfo;
     }
@@ -102,6 +111,10 @@ class Hosts
      */
     public function update(ExtendedArray $data): void
     {
+        if (!$data->offsetExists('macAddress') || !$data->offsetExists('ipAddress')) {
+            throw new HostException("Invalid update data!");
+        }
+
         $hostItem = $this->cache->getItem($data->macAddress);
         $hostItem->set($data->ipAddress);
         $this->cache->save($hostItem);

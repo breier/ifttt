@@ -24,13 +24,6 @@ class BaseController
 {
     private $requestData;
 
-    public function __construct()
-    {
-        if (false) {
-            error_log("session is running");
-        }
-    }
-
     /**
      * @route GET /
      */
@@ -41,6 +34,8 @@ class BaseController
 
     /**
      * Get Request Data
+     *
+     * @throws RequestException
      */
     public function getRequestData(Request $request): ExtendedArray
     {
@@ -53,7 +48,12 @@ class BaseController
             throw new RequestException("Invalid Request!");
         }
 
-        $this->requestData = ExtendedArray::fromJSON($content);
+        try {
+            $this->requestData = ExtendedArray::fromJSON($content);
+        } catch (\JsonException $e) {
+            throw new RequestException($e->getMessage(), $e->getCode(), $e);
+        }
+
         return $this->requestData;
     }
 
@@ -66,7 +66,7 @@ class BaseController
      */
     protected function createResponse($mixedContent, int $httpCode = 200): Response
     {
-        if (\is_string($mixedContent)) {
+        if (is_string($mixedContent)) {
             $mixedContent = new ExtendedArray(["message" => $mixedContent]);
         }
 

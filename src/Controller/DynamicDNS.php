@@ -23,8 +23,6 @@ use SmartAPI\Model\Hosts;
  */
 class DynamicDNS extends BaseController
 {
-    protected const REQUEST_OBJECT_KEY_MAC_ADDRESS = 'macAddress';
-
     private $hosts;
 
     /**
@@ -48,7 +46,7 @@ class DynamicDNS extends BaseController
 
         $hostInfo = $this->hosts->find(
             $this->getRequestData($request)->offsetGet(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS
             )
         );
 
@@ -75,22 +73,22 @@ class DynamicDNS extends BaseController
      */
     private function validateMacAddress(ExtendedArray $requestData): void
     {
-        if (!$requestData->offsetExists(self::REQUEST_OBJECT_KEY_MAC_ADDRESS)) {
+        if (!$requestData->offsetExists(Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS)) {
             throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' object key is missing!'
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' object key is missing!'
             );
         }
 
-        $macAddress = $requestData->offsetGet(self::REQUEST_OBJECT_KEY_MAC_ADDRESS);
+        $macAddress = $requestData->offsetGet(Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS);
         if (preg_match('/^([0-9a-fA-F]{2}[\:\-]?){5}[0-9a-fA-F]{2}$/', $macAddress) !== 1) {
             throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' has invalid format!'
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' has invalid format!'
             );
         }
 
-        if (empty($this->hosts->find($macAddress))) {
+        if ($this->hosts->find($macAddress)->count() === 0) {
             throw new RequestException(
-                self::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' not found!'
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' not found!'
             );
         }
     }
