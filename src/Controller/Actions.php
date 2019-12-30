@@ -17,7 +17,7 @@ use phpseclib\Net\SSH2;
 use Breier\ExtendedArray\ExtendedArray;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use SmartAPI\Exception\{RequestException, HostException};
-use SmartAPI\Traits\IFTTTaware;
+use SmartAPI\Traits\{IFTTTvalidator, Validator};
 use SmartAPI\Model\Hosts;
 use ErrorException;
 
@@ -26,7 +26,8 @@ use ErrorException;
  */
 class Actions extends BaseController
 {
-    use IFTTTaware;
+    use IFTTTvalidator;
+    use Validator;
 
     private $hosts;
 
@@ -57,29 +58,45 @@ class Actions extends BaseController
     private function sshAction(Request $request, string $command): Response
     {
         try {
-            $this->IFTTTvalidateRequest($request);
+            $this->validateRequestHeaders($request);
+            $this->validateRequest($this->getRequestData($request));
+            $this->validateMacAddress(
+                $this->getRequestData($request)->actionFields,
+                $this->getIFTTT()::ACTION_FIELD_MAC_ADDRESS
+            );
         } catch (RequestException $e) {
-            return $this->IFTTTresponse($e->getMessage(), 401);
+            return $this->getIFTTT()->createResponse(
+                $e->getMessage(),
+                $e->getCode()
+            );
         }
 
-        if ($this->IFTTTisTestMode($request)) {
-            return $this->IFTTTresponse('1q0o2w9i3e8u4r7y5t');
+        if ($this->getIFTTT()->isTestMode($request)) {
+            return $this->getIFTTT()->createResponse('1q0o2w9i3e8u4r7y5t');
         }
 
-        
         try {
             $hostInfo = $this->hosts->getFullHostInfo(
-                $this->hosts->getAll()->first()->key() ?? 'INVALID'
+                $this->getRequestData($request)->actionFields->offsetGet(
+                    $this->getIFTTT()::ACTION_FIELD_MAC_ADDRESS
+                )
             );
+
+            $hostInfo->password = $this
+                ->getRequestData($request)
+                ->actionFields
+                ->offsetGet(
+                    $this->getIFTTT()::ACTION_FIELD_PASSWORD
+                );
 
             $response = $this->sshExec($hostInfo, $command);
         } catch (HostException $e) {
-            return $this->IFTTTresponse($e->getMessage(), 404);
+            return $this->getIFTTT()->createResponse($e->getMessage(), 404);
         } catch (ErrorException $e) {
-            return $this->IFTTTresponse($e->getMessage(), 422);
+            return $this->getIFTTT()->createResponse($e->getMessage(), 422);
         }
 
-        return $this->IFTTTresponse($response);
+        return $this->getIFTTT()->createResponse($response);
     }
 
     /**

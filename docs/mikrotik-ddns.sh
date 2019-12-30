@@ -4,5 +4,5 @@
 :local eth1mac [/interface ethernet get [find name=$eth1name] mac-address];
 
 /tool fetch url="$apiurl/ddns" \
-http-method=post output=user \
+http-method=put output=user \
 http-data="{\"macAddress\":\"$eth1mac\"}";

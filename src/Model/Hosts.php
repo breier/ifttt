@@ -16,6 +16,7 @@ namespace SmartAPI\Model;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Breier\ExtendedArray\ExtendedArray;
 use SmartAPI\Exception\HostException;
+use SplFileObject;
 
 /**
  * Hosts Model class
@@ -24,8 +25,10 @@ class Hosts
 {
     public const REQUEST_OBJECT_KEY_MAC_ADDRESS = 'macAddress';
 
+    private const DDNS_HOSTS_CONFIG_PATH = __DIR__ . '/../../config/ddns-hosts.json';
     private const LOCAL_CACHE_NAMESPACE = 'SmartAPI_DynamicDNS_Hosts';
     private const LOCAL_CACHE_TIME_TO_LIVE = 2592000; // 20 days
+    private const DDNS_HOSTS_HARD_LIMIT = 2;
 
     private $list;
     private $cache;
@@ -35,9 +38,14 @@ class Hosts
      */
     public function __construct()
     {
-        $rawList = ExtendedArray::fromJSON(
-            $_ENV['DDNS_HOSTS'] ?? '{}'
-        );
+        $content = '{}';
+
+        if (file_exists(self::DDNS_HOSTS_CONFIG_PATH)) {
+            $configFile = new SplFileObject(self::DDNS_HOSTS_CONFIG_PATH);
+            $content = $configFile->fread($configFile->getSize());
+        }
+
+        $rawList = ExtendedArray::fromJSON($content);
 
         $this->list = new ExtendedArray();
         foreach ($rawList as $key => $info) {
@@ -71,7 +79,7 @@ class Hosts
             $macAddress = preg_replace(
                 '/(?:([0-9a-fA-F]{2})[\:\-]?(?!$))/',
                 $replacement,
-                $search
+                strtoupper($search)
             );
 
             if ($this->list->keys()->contains($macAddress, true)) {
@@ -102,6 +110,33 @@ class Hosts
         }
 
         return $hostInfo;
+    }
+
+    /**
+     * Create Host Object (save to ddns-hosts.json)
+     */
+    public function create(ExtendedArray $data): void
+    {
+        if ($this->list->count() >= self::DDNS_HOSTS_HARD_LIMIT) {
+            throw new HostException("Hosts limit exceded!");
+        }
+
+        if (!$data->offsetExists('macAddress') || !$data->offsetExists('ipAddress')) {
+            throw new HostException("Invalid create data!");
+        }
+
+        $data->macAddress = preg_replace(
+            '/(?:([0-9a-fA-F]{2})[\:\-]?(?!$))/',
+            '$1-',
+            strtoupper($data->macAddress)
+        );
+
+        $this->list->offsetSet($data->macAddress, new HostInfo($data));
+
+        $configFile = new SplFileObject(self::DDNS_HOSTS_CONFIG_PATH, 'w');
+        $configFile->fwrite($this->list->jsonSerialize(JSON_PRETTY_PRINT));
+
+        $this->update($data);
     }
 
     /**

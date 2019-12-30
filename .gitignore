@@ -2,3 +2,4 @@
 /.env.dist
 /var/
 /vendor/
+/config/ddns-hosts.json

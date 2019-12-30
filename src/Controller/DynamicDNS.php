@@ -13,16 +13,18 @@
 
 namespace SmartAPI\Controller;
 
-use Breier\ExtendedArray\ExtendedArray;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use SmartAPI\Exception\{HostException, RequestException};
-use SmartAPI\Model\Hosts;
+use SmartAPI\Model\{Hosts, HostInfo};
+use SmartAPI\Traits\Validator;
 
 /**
  * Dynamic DNS Controller class
  */
 class DynamicDNS extends BaseController
 {
+    use Validator;
+
     private $hosts;
 
     /**
@@ -36,12 +38,56 @@ class DynamicDNS extends BaseController
     /**
      * @route POST /ddns
      */
+    public function create(Request $request): Response
+    {
+        $requestData = $this->getRequestData($request);
+
+        try {
+            $this->validateMacAddress(
+                $requestData,
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS
+            );
+
+            throw new RequestException(
+                'Invalid ' . Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS,
+                422
+            );
+        } catch (RequestException $e) {
+            if ($e->getCode() !== 404) {
+                return $this->createResponse($e->getMessage(), $e->getCode());
+            }
+        }
+
+        $hostInfo = new HostInfo($requestData);
+
+        $hostInfo->ipAddress = $request->getClientIp();
+
+        try {
+            $this->hosts->create($hostInfo);
+        } catch (HostException $e) {
+            return $this->createResponse($e->getMessage(), 422);
+        }
+
+        return $this->createResponse(
+            [
+                "macAddress" => $hostInfo->macAddress,
+                "ipAddress" => $hostInfo->ipAddress,
+            ]
+        );
+    }
+
+    /**
+     * @route PUT /ddns
+     */
     public function update(Request $request): Response
     {
         try {
-            $this->validateMacAddress($this->getRequestData($request));
+            $this->validateMacAddress(
+                $this->getRequestData($request),
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS
+            );
         } catch (RequestException $e) {
-            return $this->createResponse($e->getMessage(), 400);
+            return $this->createResponse($e->getMessage(), $e->getCode());
         }
 
         $hostInfo = $this->hosts->find(
@@ -64,32 +110,5 @@ class DynamicDNS extends BaseController
                 "ipAddress" => $hostInfo->ipAddress,
             ]
         );
-    }
-
-    /**
-     * Validate MAC Address from request
-     *
-     * @throws RequestException
-     */
-    private function validateMacAddress(ExtendedArray $requestData): void
-    {
-        if (!$requestData->offsetExists(Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS)) {
-            throw new RequestException(
-                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' object key is missing!'
-            );
-        }
-
-        $macAddress = $requestData->offsetGet(Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS);
-        if (preg_match('/^([0-9a-fA-F]{2}[\:\-]?){5}[0-9a-fA-F]{2}$/', $macAddress) !== 1) {
-            throw new RequestException(
-                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' has invalid format!'
-            );
-        }
-
-        if ($this->hosts->find($macAddress)->count() === 0) {
-            throw new RequestException(
-                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS . ' not found!'
-            );
-        }
     }
 }

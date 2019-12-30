@@ -40,7 +40,7 @@ class HostInfo extends ExtendedArray
         }
 
         if (!$this->offsetExists('password')) {
-            $this->password = 'admin';
+            $this->password = 'password';
         }
 
         if (!$this->offsetExists('port')) {

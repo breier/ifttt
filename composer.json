@@ -1,8 +1,9 @@
 {
     "name": "breier/smart-api",
     "description": "Breier Services for SmartAPI",
+    "keywords": ["smart", "api", "ifttt"],
     "license": "GPL-3.0-or-later",
-    "version": "0.8",
+    "version": "0.9",
     "type": "package",
     "authors": [
         {

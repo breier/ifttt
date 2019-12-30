@@ -15,14 +15,14 @@ namespace SmartAPI\Controller;
 
 use SmartAPI\Exception\RequestException;
 use Symfony\Component\HttpFoundation\{Request, Response};
-use SmartAPI\Traits\IFTTTaware;
+use SmartAPI\Traits\IFTTTvalidator;
 
 /**
  * IFTTT Controller class
  */
 class IFTTT extends BaseController
 {
-    use IFTTTaware;
+    use IFTTTvalidator;
 
     /**
      * @route POST /ifttt/v1/test/setup
@@ -30,13 +30,19 @@ class IFTTT extends BaseController
     public function setup(Request $request): Response
     {
         try {
-            $this->IFTTTvalidateRequest($request);
+            $this->validateRequestHeaders($request);
         } catch (RequestException $e) {
-            return $this->IFTTTresponse($e->getMessage(), 401);
+            return $this->getIFTTT()->createResponse(
+                $e->getMessage(),
+                $e->getCode()
+            );
         }
 
         $scaffold['data']['samples']['actions'] = [
-            "wol_pcd" => [],
+            "wol_pcd" => [
+                "mac_address" => '01-23-45-AB-CD-EF',
+                "password" => 'Local Host or Router',
+            ],
         ];
 
         return $this->createResponse($scaffold);
@@ -48,9 +54,12 @@ class IFTTT extends BaseController
     public function status(Request $request): Response
     {
         try {
-            $this->IFTTTvalidateRequest($request);
+            $this->validateRequestHeaders($request);
         } catch (RequestException $e) {
-            return $this->IFTTTresponse($e->getMessage(), 401);
+            return $this->getIFTTT()->createResponse(
+                $e->getMessage(),
+                $e->getCode()
+            );
         }
 
         return $this->createResponse('OK');

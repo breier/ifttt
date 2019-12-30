@@ -2,9 +2,13 @@ index:
     path: /
     methods: GET
     controller: SmartAPI\Controller\BaseController::index
-ddns:
+ddns-create:
     path: /ddns
     methods: POST
+    controller: SmartAPI\Controller\DynamicDNS::create
+ddns-update:
+    path: /ddns
+    methods: PUT
     controller: SmartAPI\Controller\DynamicDNS::update
 ifttt-status:
     path: /ifttt/v1/status
