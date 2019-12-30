@@ -60,10 +60,6 @@ class Actions extends BaseController
         try {
             $this->validateRequestHeaders($request);
             $this->validateRequest($this->getRequestData($request));
-            $this->validateMacAddress(
-                $this->getRequestData($request)->actionFields,
-                $this->getIFTTT()::ACTION_FIELD_MAC_ADDRESS
-            );
         } catch (RequestException $e) {
             return $this->getIFTTT()->createResponse(
                 $e->getMessage(),
@@ -76,7 +72,12 @@ class Actions extends BaseController
         }
 
         try {
-            $hostInfo = $this->hosts->getFullHostInfo(
+            $this->validateMacAddress(
+                $this->getRequestData($request)->actionFields,
+                $this->getIFTTT()::ACTION_FIELD_MAC_ADDRESS
+            );
+
+            $hostInfo = $this->hosts->find(
                 $this->getRequestData($request)->actionFields->offsetGet(
                     $this->getIFTTT()::ACTION_FIELD_MAC_ADDRESS
                 )
@@ -90,6 +91,11 @@ class Actions extends BaseController
                 );
 
             $response = $this->sshExec($hostInfo, $command);
+        } catch (RequestException $e) {
+            return $this->getIFTTT()->createResponse(
+                $e->getMessage(),
+                $e->getCode()
+            );
         } catch (HostException $e) {
             return $this->getIFTTT()->createResponse($e->getMessage(), 404);
         } catch (ErrorException $e) {
