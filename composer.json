@@ -3,7 +3,7 @@
     "description": "Breier Services for SmartAPI",
     "keywords": ["smart", "api", "ifttt"],
     "license": "GPL-3.0-or-later",
-    "version": "0.9",
+    "version": "0.9.5",
     "type": "package",
     "authors": [
         {
