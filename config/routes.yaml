@@ -18,7 +18,11 @@ ifttt-setup:
     path: /ifttt/v1/test/setup
     methods: POST
     controller: SmartAPI\Controller\IFTTT::setup
-ifttt-wol_pcd:
+ifttt-action-wol_pcd:
     path: /ifttt/v1/actions/wol_pcd
     methods: POST
     controller: SmartAPI\Controller\Actions::wakeOnLan
+ifttt-action-suspend:
+    path: /ifttt/v1/actions/suspend
+    methods: POST
+    controller: SmartAPI\Controller\Actions::suspend

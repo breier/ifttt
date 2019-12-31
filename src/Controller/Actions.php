@@ -53,6 +53,17 @@ class Actions extends BaseController
     }
 
     /**
+     * @route POST /ifttt/v1/actions/suspend
+     */
+    public function suspend(Request $request): Response
+    {
+        return $this->sshAction(
+            $request,
+            'sudo systemctl suspend -i'
+        );
+    }
+
+    /**
      * IFTTT prepare to execute given ssh action
      */
     private function sshAction(Request $request, string $command): Response

@@ -43,6 +43,10 @@ class IFTTT extends BaseController
                 "mac_address" => '01-23-45-AB-CD-EF',
                 "password" => 'Local Host or Router',
             ],
+            "suspend" => [
+                "mac_address" => '01-23-45-AB-CD-EF',
+                "password" => 'Host to be suspended',
+            ],
         ];
 
         return $this->createResponse($scaffold);
