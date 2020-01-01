@@ -154,4 +154,27 @@ class Hosts
         $hostItem->set($data->ipAddress);
         $this->cache->save($hostItem);
     }
+
+    /**
+     * Delete Host Object
+     *
+     * @throws HostException
+     */
+    public function delete(string $macAddress): void
+    {
+        $macAddress = preg_replace(
+            '/(?:([0-9a-fA-F]{2})[\:\-]?(?!$))/',
+            '$1-',
+            strtoupper($macAddress)
+        );
+
+        if (!$this->list->offsetExists($macAddress)) {
+            throw new HostException("Invalid macAddress!");
+        }
+
+        $this->list->offsetUnset($macAddress);
+
+        $configFile = new SplFileObject(self::DDNS_HOSTS_CONFIG_PATH, 'w');
+        $configFile->fwrite($this->list->jsonSerialize(JSON_PRETTY_PRINT));
+    }
 }

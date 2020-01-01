@@ -10,6 +10,14 @@ ddns-update:
     path: /ddns
     methods: PUT
     controller: SmartAPI\Controller\DynamicDNS::update
+ddns-get:
+    path: /ddns/{macAddress}
+    methods: GET
+    controller: SmartAPI\Controller\DynamicDNS::get
+ddns-delete:
+    path: /ddns/{macAddress}
+    methods: DELETE
+    controller: SmartAPI\Controller\DynamicDNS::delete
 ifttt-status:
     path: /ifttt/v1/status
     methods: GET

@@ -111,4 +111,56 @@ class DynamicDNS extends BaseController
             ]
         );
     }
+
+    /**
+     * @route GET /ddns/{macAddress}
+     */
+    public function get(string $macAddress): Response
+    {
+        try {
+            $this->validateMacAddress(
+                new HostInfo(['macAddress' => $macAddress]),
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS
+            );
+        } catch (RequestException $e) {
+            return $this->createResponse($e->getMessage(), $e->getCode());
+        }
+
+        return $this->createResponse(
+            $this->hosts->find($macAddress)->filter(
+                function ($key) {
+                    return $key === 'ipAddress';
+                },
+                ARRAY_FILTER_USE_KEY
+            )
+        );
+    }
+
+    /**
+     * @route DELETE /ddns/{macAddress}
+     */
+    public function delete(string $macAddress): Response
+    {
+        $ddnsCanDelete = $_ENV['DDNS_CAN_DELETE'] ?? 'false';
+        if ($ddnsCanDelete !== 'true') {
+            return $this->createResponse("Method not allowed", 405);
+        }
+
+        try {
+            $this->validateMacAddress(
+                new HostInfo(['macAddress' => $macAddress]),
+                Hosts::REQUEST_OBJECT_KEY_MAC_ADDRESS
+            );
+        } catch (RequestException $e) {
+            return $this->createResponse($e->getMessage(), $e->getCode());
+        }
+
+        try {
+            $this->hosts->delete($macAddress);
+        } catch (HostException $e) {
+            return $this->createResponse($e->getMessage(), 422);
+        }
+
+        return $this->createResponse("{$macAddress} successfully deleted");
+    }
 }
