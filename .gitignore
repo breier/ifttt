@@ -3,3 +3,4 @@
 /var/
 /vendor/
 /config/ddns-hosts.json
+.phpunit
