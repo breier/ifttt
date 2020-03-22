@@ -1,0 +1,5 @@
+#!/etc/sudoers.d/ifttt
+
+Cmnd_Alias AUTOMATING = /usr/bin/systemctl suspend -i, /bin/ls
+
+ifttt ALL=NOPASSWD: AUTOMATING
